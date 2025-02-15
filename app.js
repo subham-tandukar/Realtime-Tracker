@@ -9,6 +9,8 @@ const server = http.createServer(app);
 
 const io = socketio(server);
 
+const port = process.env.PORT || 8009;
+
 app.set("view engine", "ejs");
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -27,4 +29,4 @@ app.get("/", function (req, res) {
   res.render("index");
 });
 
-server.listen(3000);
+server.listen(port);
