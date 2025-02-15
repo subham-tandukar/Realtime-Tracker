@@ -8,8 +8,8 @@ const server = http.createServer(app);
 const io = socketio(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+  },
 });
 
 const port = process.env.PORT || 8009;
@@ -19,6 +19,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 io.on("connection", (socket) => {
   console.log(`User connected: ${socket.id}`);
+  
+  socket.emit("user-id", socket.id);
 
   socket.on("send-location", (data) => {
     io.emit("receive-location", { id: socket.id, ...data });

@@ -1,5 +1,13 @@
 const socket = io();
 
+// Initialize the userId variable
+let userId;
+
+socket.on("user-id", (id) => {
+  // Set the userId when the server sends it
+  userId = id;
+});
+
 if (navigator.geolocation) {
   navigator.geolocation.watchPosition(
     (position) => {
@@ -32,7 +40,11 @@ socket.on("receive-location", (data) => {
   if (markers[id]) {
     markers[id].setLatLng([latitude, longitude]);
   } else {
-    markers[id] = L.marker([latitude, longitude]).addTo(map);
+    const popupContent = id === userId ? "You" : `User: ${id}`;
+    markers[id] = L.marker([latitude, longitude])
+      .addTo(map)
+      .bindPopup(popupContent)
+      .openPopup();
   }
 });
 
