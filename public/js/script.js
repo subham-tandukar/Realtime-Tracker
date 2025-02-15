@@ -2,6 +2,7 @@ const socket = io();
 
 // Initialize the userId variable
 let userId;
+let userLatitude, userLongitude;
 
 socket.on("user-id", (id) => {
   // Set the userId when the server sends it
@@ -12,14 +13,22 @@ if (navigator.geolocation) {
   navigator.geolocation.watchPosition(
     (position) => {
       const { latitude, longitude } = position.coords;
-      socket.emit("send-location", { latitude, longitude });
+      // Emit location data with the userId
+      socket.emit("send-location", { id: userId, latitude, longitude });
+
+      // Update user's latitude and longitude
+      userLatitude = latitude;
+      userLongitude = longitude;
+
+      // Recenter map to user's current position (you can adjust zoom level)
+      map.setView([latitude, longitude], 16);
     },
     (error) => {
       console.error(error);
     },
     {
       enableHighAccuracy: true,
-      timeout: 5000,
+      timeout: 10000,
       maximumAge: 0,
     }
   );
@@ -28,7 +37,7 @@ if (navigator.geolocation) {
 const map = L.map("map").setView([0, 0], 16);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "Reatime Tracker",
+  attribution: "Realtime Tracker",
 }).addTo(map);
 
 const markers = {};
@@ -52,5 +61,14 @@ socket.on("user-disconnected", (id) => {
   if (markers[id]) {
     map.removeLayer(markers[id]);
     delete markers[id];
+  }
+});
+
+// Handle recenter button click
+document.getElementById("recenterButton").addEventListener("click", () => {
+  if (userLatitude && userLongitude) {
+    map.setView([userLatitude, userLongitude], 16); // Recenter the map to user's location
+  } else {
+    console.error("Unable to get current location.");
   }
 });
